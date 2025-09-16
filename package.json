@@ -1,0 +1,19 @@
+{
+  "name": "auth-template",
+  "version": "1.0.0",
+  "description": "Template of authentication and authorization with proper documentation for future use.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "Backend",
+    "API"
+  ],
+  "author": "Shoabur Rahman Chishty",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}
