@@ -434,6 +434,69 @@ export const AvailableTaskStatus = Object.values(TaskStatusEnum);
 
 ---
 
+## 9️⃣ Connect MongoDB with Mongoose
+
+We’ll use [Mongoose](https://mongoosejs.com/) to connect and interact with MongoDB.
+
+### 1. Install Mongoose
+
+```bash
+npm install mongoose
+```
+### 2. Update `.env`
+```bash
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/node-auth-test
+PORT=8000
+CORS_ORIGIN=*
+# (e.g., https://example.com, https://another.com)
+```
+> Replace `<username>` / `<password>` and the cluster URL with your actual connection string from MongoDB Atlas.
+
+### 3. Create `src/db/index.js`
+```javascript
+import mongoose from "mongoose";
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected");
+  } catch (error) {
+    console.error("❌ MongoDB connection error: ", error);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
+
+```
+
+### 4. Update `src/index.js`
+Load the database connection before starting the server.
+```javascript
+import dotenv from "dotenv";
+import app from "./app.js";
+import connectDB from "./db/index.js";
+
+dotenv.config({
+  path: "./.env",
+});
+
+const port = process.env.PORT || 3000;
+
+connectDB()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Example app listening on port http://localhost:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error: ", err);
+    process.exit(1);
+  });
+```
+
+---
+
 ## 6️⃣ Roadmap
 
 - [ ] Project folder structure  
