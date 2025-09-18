@@ -227,6 +227,130 @@ console.log("Hello World");
 
 ---
 
+## 6️⃣ Project Folder Structure
+
+The project is organized for scalability and clarity:
+```bash
+Till-User-Authentication-Authorization-Template-Node.js/
+├── node_modules/
+├── public/
+│ └── images/
+│ └── .gitkeep
+├── src/
+│ ├── controllers/
+│ ├── db/
+│ ├── middlewares/
+│ ├── models/
+│ ├── routes/
+│ ├── utils/
+│ ├── validators/
+│ └── index.js
+├── .env
+├── .gitignore
+├── .prettierignore
+├── .prettierrc
+├── package.json
+└── README.md
+```
+
+> `public/images/.gitkeep` ensures Git tracks the otherwise-empty `images` folder.
+
+---
+
+## 6️⃣ Express Setup
+
+[Express](https://www.npmjs.com/package/express) is used as the web framework for building APIs and handling routes.
+
+### Installation
+
+```bash
+npm install express --save
+```
+
+### Basic Server Setup
+
+`src/index.js`:
+```javascript
+import dotenv from "dotenv";
+import express from "express";
+
+dotenv.config({
+  path: "./.env",
+});
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port http://localhost:${port}`);
+});
+```
+### Environment Variables
+
+`.env`:
+```ini
+PORT=8000
+```
+
+> The server will use the port specified in .env, or default to 3000 if not set.
+
+### Usage
+```bash
+npm run dev
+```
+
+Visit `http://localhost:8000` to see the output:
+```javascript
+Hello World!
+```
+
+---
+
+## 8️⃣ Add Middlewares (Body Parsing, Static, CORS)
+
+To prepare for handling requests and cross-origin access, add middleware in `src/app.js`.
+
+### Updated `src/app.js`
+
+```javascript
+import express from "express";
+import cors from "cors";
+
+const app = express();
+
+// Basic Configurations
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(",") || "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+export default app;
+```
+
+### `.env` file:
+```bash
+PORT=8000
+CORS_ORIGIN=*
+# (e.g., https://example.com, https://another.com)
+```
+
+> CORS_ORIGIN can be a comma-separated list of allowed domains, or * for development.
 ## 6️⃣ Roadmap
 
 - [ ] Project folder structure  
@@ -239,18 +363,3 @@ console.log("Hello World");
 - [ ] Finalize README with API reference
 
 ---
-
-### Recommended git commit messages
-
-- For initial repo setup:  
-  ```
-  docs: add initial README and project setup
-  ```
-- For Prettier configuration:  
-  ```
-  chore: add and configure Prettier
-  ```
-- For Nodemon and dotenv setup:  
-  ```
-  chore: add nodemon and dotenv configuration
-  ```
