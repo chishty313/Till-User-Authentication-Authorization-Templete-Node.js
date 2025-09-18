@@ -497,6 +497,70 @@ connectDB()
 
 ---
 
+## 🔟 Health Check Endpoint (with Async Handler)
+
+We’ll create a health check route and wrap its logic with a reusable `asyncHandler` to simplify error handling.
+
+---
+
+### 1. `src/utils/async-handler.js`
+
+```javascript
+const asyncHandler = (requestHandler) => {
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch(next);
+  };
+};
+
+export { asyncHandler };
+```
+
+### 2. `src/controllers/healthcheck.controllers.js`
+
+```javascript
+import { ApiResponse } from "../utils/api-response.js";
+import { asyncHandler } from "../utils/async-handler.js";
+
+const healthCheck = asyncHandler(async (req, res) => {
+  res.status(200).json(new ApiResponse(200, { message: "Server is running!" }));
+});
+
+export { healthCheck };
+```
+
+### 3. `src/controllers/healthcheck.routes.js`
+
+```javascript
+import { Router } from "express";
+import { healthCheck } from "../controllers/healthcheck.controllers.js";
+
+const router = Router();
+
+router.route("/").get(healthCheck);
+
+export default router;
+```
+
+### 4. Add route in `src/app.js`
+Only the added parts (keep them in correct order):
+
+```javascript
+// import the routes
+import healthCheckRouter from "./routes/healthcheck.routes.js";
+
+// register the route
+app.use("/api/v1/healthcheck", healthCheckRouter);
+```
+> ✅ Test:
+Start the server and visit http://localhost:8000/api/v1/healthcheck
+.
+You should see:
+```javascript
+{ "statusCode": 200, "data": { "message": "Server is running!" } }
+```
+
+---
+
 ## 6️⃣ Roadmap
 
 - [ ] Project folder structure  
