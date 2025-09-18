@@ -561,6 +561,158 @@ You should see:
 
 ---
 
+## 1️⃣1️⃣ User Model (Authentication Schema)
+
+We’ll define the `User` schema with password hashing, JWT helpers, and token utilities.
+
+---
+
+### 1. Install dependencies
+
+```bash
+npm install bcrypt jsonwebtoken
+```
+
+### 2. Update `.env`
+
+```bash
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/node-auth-test
+PORT=8000
+CORS_ORIGIN=*
+
+ACCESS_TOKEN_SECRET=testing
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=testing
+REFRESH_TOKEN_EXPIRY=10d
+```
+
+> ⚠️ In production, use strong secrets (not testing) and keep them private.
+
+### 3. Create `src/models/user.models.js`
+
+```javascript
+import mongoose, { Schema } from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+const userSchema = new Schema(
+  {
+    avatar: {
+      type: {
+        url: String,
+        localPath: String,
+      },
+      default: {
+        url: `https://placehold.co/200x200`,
+        localPath: "",
+      },
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    fullname: {
+      type: String,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    refreshToken: {
+      type: String,
+    },
+    forgotPasswordToken: {
+      type: String,
+    },
+    forgotPasswordExpiry: {
+      type: Date,
+    },
+    emailVerificationToken: {
+      type: String,
+    },
+    emailVerificationExpiry: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+// Hash password before save
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+// Compare password
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+// Generate JWT access token
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    },
+  );
+};
+
+// Generate JWT refresh token
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    { _id: this._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    },
+  );
+};
+
+// Generate temporary token (e.g., email/forgot-password)
+userSchema.methods.generateTemporaryToken = function () {
+  const unHashedToken = crypto.randomBytes(20).toString("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(unHashedToken)
+    .digest("hex");
+
+  const tokenExpiry = Date.now() + 20 * 60 * 1000; // 20 min
+
+  return { unHashedToken, hashedToken, tokenExpiry };
+};
+
+export const User = mongoose.model("User", userSchema);
+
+```
+
+---
+
 ## 6️⃣ Roadmap
 
 - [ ] Project folder structure  
