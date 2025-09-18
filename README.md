@@ -351,6 +351,61 @@ CORS_ORIGIN=*
 ```
 
 > CORS_ORIGIN can be a comma-separated list of allowed domains, or * for development.
+
+---
+
+## 9️⃣ Standard API & Error Response Classes
+
+To make our responses consistent across the app, we’ll create two utility classes:  
+`ApiResponse` for successful responses and `ApiError` for errors.
+
+### `src/utils/ApiResponse.js`
+
+```javascript
+class ApiResponse {
+  constructor(statusCode, data, message = "Success") {
+    this.statusCode = statusCode;
+    this.data = data;
+    this.message = message;
+    this.success = statusCode < 400;
+  }
+}
+
+export { ApiResponse };
+```
+
+`src/utils/ApiError.js`
+
+```javascript
+class ApiError extends Error {
+  constructor(
+    statusCode,
+    message = "Something went wrong",
+    error = [],
+    stack = "",
+  ) {
+    super(message);
+    this.statusCode = statusCode;
+    this.data = null;
+    this.message = message;
+    this.success = false;
+    this.error = error;
+
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+}
+
+export { ApiError };
+```
+
+> These classes will be used in controllers, services, and middleware to send uniform responses.
+
+---
+
 ## 6️⃣ Roadmap
 
 - [ ] Project folder structure  
